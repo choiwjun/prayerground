@@ -1,0 +1,56 @@
+# 당골래 도메인 리소스 정의
+# 화면 명세(specs/screens/)에서 참조하는 데이터 리소스
+
+resources:
+  prayer_sites:
+    description: 기도터 마스터 데이터
+    table: prayer_sites
+    fields:
+      id: { type: uuid, pk: true }
+      name: { type: string, required: true }
+      address: { type: string, required: true }
+      lat: { type: float, required: true }
+      lng: { type: float, required: true }
+      type: { type: string, required: true, enum: [사찰, 굿당, 서낭당, 산신당, 당산목, 기타] }
+      description: { type: string }
+      images: { type: string[], default: "[]" }
+      contact: { type: string }
+      is_visible: { type: boolean, default: true }
+      review_count: { type: integer, default: 0 }
+      favorite_count: { type: integer, default: 0 }
+      created_at: { type: timestamptz }
+      updated_at: { type: timestamptz }
+    access:
+      read: public
+      write: authenticated
+
+  curations:
+    description: 큐레이션 그룹
+    table: curations
+    fields:
+      id: { type: uuid, pk: true }
+      title: { type: string, required: true }
+      description: { type: string }
+      cover_image: { type: string }
+      site_ids: { type: uuid[], default: "[]" }
+      sort_order: { type: integer, default: 0 }
+      is_visible: { type: boolean, default: true }
+      created_at: { type: timestamptz }
+    access:
+      read: public
+      write: authenticated
+
+  banners:
+    description: 홈 배너
+    table: banners
+    fields:
+      id: { type: uuid, pk: true }
+      title: { type: string, required: true }
+      image_url: { type: string, required: true }
+      link_url: { type: string }
+      sort_order: { type: integer, default: 0 }
+      is_visible: { type: boolean, default: true }
+      created_at: { type: timestamptz }
+    access:
+      read: public
+      write: authenticated

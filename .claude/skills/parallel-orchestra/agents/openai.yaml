@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallel Orchestra"
+  short_description: "Parallel multi-agent orchestration workflow skill"
+  default_prompt: "Use $parallel-orchestra to split this work into parallel specialist lanes and merge the results."

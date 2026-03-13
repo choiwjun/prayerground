@@ -1,0 +1,114 @@
+version: "2.0"
+
+screen:
+  name: 지도
+  route: /map
+  layout: full-width
+  auth: false
+
+data_requirements:
+  - resource: prayer_sites
+    needs: [id, name, address, lat, lng, type, images]
+    filters:
+      is_visible: true
+      bounds: "?bounds"
+      type: "?type"
+      region: "?region"
+
+components:
+  - id: kakao_map
+    type: map
+    position: main
+    function: 카카오맵 전체 화면 + 마커 클러스터링
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: move:map
+        do: 현재 영역 기준 기도터 마커 갱신
+      - on: click:marker
+        do: 바톰시트 열기 (기도터 간략 정보)
+
+  - id: filter_bar
+    type: navigation
+    position: header
+    function: 유형 필터 칩 바 (사찰/굿당/서낭당/산신당/당산목)
+    events:
+      - on: click:chip
+        do: 선택 유형으로 마커 필터링, URL 업데이트
+
+  - id: region_filter
+    type: navigation
+    position: header
+    function: 지역(시/도) 선택 드롭다운
+    events:
+      - on: select:region
+        do: 해당 지역 중심으로 지도 이동
+
+  - id: nearby_button
+    type: button
+    position: overlay
+    function: 내 주변 탐색 FAB (GPS 기반)
+    events:
+      - on: click
+        do: GPS 현재 위치로 지도 이동 + 반경 표시
+
+  - id: site_bottom_sheet
+    type: detail
+    position: overlay
+    function: 기도터 간략 정보 바톰시트 (Vaul)
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:detail
+        do: /sites/:id로 이동
+      - on: swipe:down
+        do: 바톰시트 닫기
+
+  - id: bottom_tab_bar
+    type: navigation
+    position: footer
+    function: 하단 탭 네비게이션
+    events:
+      - on: click:tab
+        do: 선택한 탭 페이지로 이동
+
+connections:
+  navigations:
+    - from: site_bottom_sheet
+      to: /sites/:id
+    - from: bottom_tab_bar
+      to: /
+
+  shared_components:
+    - bottom_tab_bar
+
+tests:
+  - name: 초기 로드
+    when: 지도 페이지 접속
+    then:
+      - 전국 지도 표시
+      - 기도터 마커 클러스터링 표시
+      - 유형 필터 칩 바 표시
+
+  - name: 마커 클릭
+    when: 기도터 마커 클릭
+    then:
+      - 바톰시트 슬라이드업
+      - 기도터 이름, 유형, 주소, 대표 이미지 표시
+
+  - name: 유형 필터링
+    when: "사찰" 칩 선택
+    then:
+      - 사찰 유형 마커만 표시
+      - URL에 ?type=사찰 반영
+
+  - name: 내 주변 탐색
+    when: 내 주변 FAB 클릭 (GPS 허용)
+    then:
+      - 현재 위치로 지도 이동
+      - 반경 내 기도터 마커 표시
+
+  - name: 바톰시트에서 상세 이동
+    when: 바톰시트 "더 보기" 클릭
+    then:
+      - /sites/:id로 이동

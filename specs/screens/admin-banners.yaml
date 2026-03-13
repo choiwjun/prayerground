@@ -1,0 +1,84 @@
+version: "2.0"
+
+screen:
+  name: 배너 관리
+  route: /admin/banners
+  layout: dashboard
+  auth: true
+  roles: [admin]
+
+data_requirements:
+  - resource: banners
+    needs: [id, title, image_url, link_url, sort_order, is_visible]
+
+components:
+  - id: admin_sidebar
+    type: navigation
+    position: sidebar
+    function: 관리자 사이드 메뉴
+    events:
+      - on: click:menu
+        do: 선택한 관리 페이지로 이동
+
+  - id: banner_list
+    type: list
+    position: main
+    function: 배너 목록 (드래그 순서 변경 + 미리보기)
+    data_source:
+      resource: banners
+    events:
+      - on: drag:reorder
+        do: sort_order 업데이트
+      - on: click:item
+        do: 배너 편집 다이얼로그 열기
+      - on: click:visibility
+        do: 노출 on/off 토글
+
+  - id: banner_form_dialog
+    type: form
+    position: overlay
+    function: 배너 등록/수정 폼 (이미지 + 링크)
+    data_source:
+      resource: banners
+    events:
+      - on: submit
+        do: 배너 저장
+      - on: upload:image
+        do: Supabase Storage에 이미지 업로드
+
+  - id: create_button
+    type: button
+    position: main
+    function: 새 배너 등록 버튼
+    events:
+      - on: click
+        do: 빈 등록 폼 다이얼로그 열기
+
+connections:
+  navigations:
+    - from: admin_sidebar
+      to: /admin/sites
+    - from: admin_sidebar
+      to: /admin/curations
+
+  shared_components:
+    - admin_sidebar
+
+tests:
+  - name: 초기 로드
+    when: 관리자 접속
+    then:
+      - 배너 목록 표시 (이미지 미리보기 포함)
+      - 새 등록 버튼 표시
+
+  - name: 배너 등록
+    when: 등록 → 이미지 업로드 → 링크 입력 → 제출
+    then:
+      - 배너 저장 성공
+      - 목록에 추가
+
+  - name: 순서 변경
+    when: 배너 드래그로 순서 변경
+    then:
+      - sort_order 업데이트
+      - 홈 캐러셀 순서 반영

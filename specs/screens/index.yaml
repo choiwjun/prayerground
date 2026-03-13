@@ -1,0 +1,40 @@
+# 당골래 화면 인덱스
+version: "2.0"
+
+screens:
+  # 사용자 화면
+  - id: home
+    name: 홈
+    route: /
+    file: home.yaml
+
+  - id: map
+    name: 지도
+    route: /map
+    file: map.yaml
+
+  - id: site-detail
+    name: 기도터 상세
+    route: /sites/:id
+    file: site-detail.yaml
+
+  - id: search
+    name: 검색결과
+    route: /search
+    file: search.yaml
+
+  # 관리자 화면
+  - id: admin-sites
+    name: 기도터 관리
+    route: /admin/sites
+    file: admin-sites.yaml
+
+  - id: admin-curations
+    name: 큐레이션 관리
+    route: /admin/curations
+    file: admin-curations.yaml
+
+  - id: admin-banners
+    name: 배너 관리
+    route: /admin/banners
+    file: admin-banners.yaml

@@ -1,0 +1,87 @@
+version: "2.0"
+
+screen:
+  name: 기도터 상세
+  route: /sites/:id
+  layout: full-width
+  auth: false
+
+data_requirements:
+  - resource: prayer_sites
+    needs: [id, name, address, lat, lng, type, description, images, contact]
+    filters: { id: ":id" }
+
+components:
+  - id: back_button
+    type: button
+    position: header
+    function: 이전 페이지로 돌아가기
+    events:
+      - on: click
+        do: 이전 페이지로 이동 (history.back)
+
+  - id: site_header
+    type: detail
+    position: main
+    function: 기도터 이름 + 유형 태그 표시
+    data_source:
+      resource: prayer_sites
+
+  - id: image_gallery
+    type: carousel
+    position: main
+    function: 기도터 사진 갤러리 (가로 스크롤)
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:image
+        do: 이미지 전체 화면 보기
+
+  - id: site_info
+    type: detail
+    position: main
+    function: 주소, 연락처, 설명 정보 표시
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:address
+        do: 주소 클립보드 복사
+
+  - id: mini_map
+    type: map
+    position: main
+    function: 위치 확인용 미니맵 (카카오맵)
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:map
+        do: 카카오맵 앱/웹으로 길찾기 열기
+
+connections:
+  navigations:
+    - from: back_button
+      to: previous_page
+    - from: mini_map
+      to: external:kakao_map
+
+  shared_components: []
+
+tests:
+  - name: 초기 로드
+    when: /sites/:id 접속
+    then:
+      - 기도터 이름, 유형 태그 표시
+      - 이미지 갤러리 표시 (이미지 있을 시)
+      - 주소, 설명 표시
+      - 미니맵에 위치 마커 표시
+
+  - name: 이미지 없는 기도터
+    when: 이미지가 없는 기도터 접속
+    then:
+      - 기본 플레이스홀더 이미지 표시
+
+  - name: 존재하지 않는 기도터
+    when: 잘못된 ID로 접속
+    then:
+      - 404 페이지 표시
+      - 홈으로 안내 링크 표시

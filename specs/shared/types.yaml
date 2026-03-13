@@ -1,0 +1,60 @@
+# 당골래 공통 타입
+version: "2.0"
+
+types:
+  PrayerSite:
+    source: prayer_sites table
+    fields:
+      id: uuid
+      name: string
+      address: string
+      lat: float
+      lng: float
+      type: PrayerSiteType
+      description: string | null
+      images: string[]
+      contact: string | null
+      is_visible: boolean
+      review_count: integer
+      favorite_count: integer
+      created_at: timestamptz
+      updated_at: timestamptz
+
+  PrayerSiteType:
+    type: enum
+    values: [사찰, 굿당, 서낭당, 산신당, 당산목, 기타]
+
+  Curation:
+    source: curations table
+    fields:
+      id: uuid
+      title: string
+      description: string | null
+      cover_image: string | null
+      site_ids: uuid[]
+      sort_order: integer
+      is_visible: boolean
+      created_at: timestamptz
+
+  Banner:
+    source: banners table
+    fields:
+      id: uuid
+      title: string
+      image_url: string
+      link_url: string | null
+      sort_order: integer
+      is_visible: boolean
+      created_at: timestamptz
+
+  GeoCoordinate:
+    type: object
+    fields:
+      lat: float
+      lng: float
+
+  MapBounds:
+    type: object
+    fields:
+      sw: GeoCoordinate
+      ne: GeoCoordinate

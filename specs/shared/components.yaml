@@ -1,0 +1,57 @@
+# 당골래 공통 컴포넌트
+version: "2.0"
+
+shared_components:
+  - id: bottom_tab_bar
+    type: navigation
+    description: 하단 탭 네비게이션 (홈/지도/마이페이지)
+    used_in: [home, map, search]
+    tabs:
+      - label: 홈
+        route: /
+        icon: home
+      - label: 지도
+        route: /map
+        icon: map
+      - label: 마이페이지
+        route: /mypage
+        icon: user
+        disabled: true  # MVP에서 비활성
+
+  - id: site_card
+    type: card
+    description: 기도터 카드 (이미지 + 이름 + 유형 + 주소)
+    used_in: [home, search]
+    data_source:
+      resource: prayer_sites
+      needs: [id, name, address, type, images]
+
+  - id: admin_sidebar
+    type: navigation
+    description: 관리자 사이드 메뉴
+    used_in: [admin-sites, admin-curations, admin-banners]
+    menu_items:
+      - label: 기도터 관리
+        route: /admin/sites
+        icon: map-pin
+      - label: 큐레이션 관리
+        route: /admin/curations
+        icon: layout
+      - label: 배너 관리
+        route: /admin/banners
+        icon: image
+
+  - id: visibility_toggle
+    type: toggle
+    description: 노출 on/off 토글 스위치
+    used_in: [admin-sites, admin-curations, admin-banners]
+
+  - id: sort_order_control
+    type: drag
+    description: 드래그로 순서 변경
+    used_in: [admin-curations, admin-banners]
+
+  - id: image_uploader
+    type: upload
+    description: 이미지 업로드 (react-dropzone + Supabase Storage)
+    used_in: [admin-sites, admin-curations, admin-banners]

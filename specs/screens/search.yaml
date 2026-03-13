@@ -1,0 +1,93 @@
+version: "2.0"
+
+screen:
+  name: 검색결과
+  route: /search
+  layout: full-width
+  auth: false
+
+data_requirements:
+  - resource: prayer_sites
+    needs: [id, name, address, type, images]
+    filters:
+      q: "?q"
+      type: "?type"
+      sort: "?sort"
+      is_visible: true
+
+components:
+  - id: search_input
+    type: search
+    position: header
+    function: 검색 키워드 입력 및 수정
+    events:
+      - on: submit
+        do: URL 쿼리 업데이트, 검색 결과 갱신
+
+  - id: filter_chips
+    type: navigation
+    position: main
+    function: 유형 필터 칩 (전체/사찰/굿당/서낭당/산신당/당산목)
+    events:
+      - on: click:chip
+        do: 유형 필터 적용, URL 업데이트
+
+  - id: sort_select
+    type: navigation
+    position: main
+    function: 정렬 선택 (최신순/이름순)
+    events:
+      - on: change
+        do: 정렬 변경, URL 업데이트
+
+  - id: search_result_list
+    type: list
+    position: main
+    function: 검색 결과 기도터 카드 목록
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:card
+        do: /sites/:id로 이동
+
+  - id: empty_state
+    type: detail
+    position: main
+    function: 검색 결과 없음 상태 표시
+    events:
+      - on: click:home
+        do: 홈으로 이동
+
+connections:
+  navigations:
+    - from: search_result_list
+      to: /sites/:id
+    - from: empty_state
+      to: /
+
+  shared_components:
+    - bottom_tab_bar
+
+tests:
+  - name: 키워드 검색
+    when: ?q=인왕산으로 접속
+    then:
+      - "인왕산" 포함 기도터 목록 표시
+      - 검색바에 "인왕산" 표시
+
+  - name: 유형 필터
+    when: "사찰" 칩 선택
+    then:
+      - 사찰 유형만 필터링
+      - URL에 ?type=사찰 반영
+
+  - name: 검색 결과 없음
+    when: 존재하지 않는 키워드 검색
+    then:
+      - "검색 결과가 없습니다" 메시지 표시
+      - 홈으로 이동 링크 표시
+
+  - name: 상세 이동
+    when: 검색 결과 카드 클릭
+    then:
+      - /sites/:id로 이동

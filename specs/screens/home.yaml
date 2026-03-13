@@ -1,0 +1,117 @@
+version: "2.0"
+
+screen:
+  name: 홈
+  route: /
+  layout: full-width
+  auth: false
+
+data_requirements:
+  - resource: banners
+    needs: [id, title, image_url, link_url]
+    filters: { is_visible: true, sort: sort_order }
+
+  - resource: curations
+    needs: [id, title, description, cover_image, site_ids]
+    filters: { is_visible: true, sort: sort_order }
+
+  - resource: prayer_sites
+    needs: [id, name, address, lat, lng, type, images]
+    filters: { is_visible: true }
+
+components:
+  - id: banner_carousel
+    type: carousel
+    position: main
+    function: 상단 배너 캐러셀 (CTA)
+    data_source:
+      resource: banners
+    events:
+      - on: click:banner
+        do: 배너 link_url로 이동
+
+  - id: search_bar
+    type: search
+    position: main
+    function: 기도터 키워드 검색
+    events:
+      - on: submit
+        do: /search?q={query}로 이동
+
+  - id: map_preview
+    type: map
+    position: main
+    function: 지도 미리보기 섹션 (축소 지도 + CTA)
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:section
+        do: /map 페이지로 이동
+
+  - id: curation_section
+    type: list
+    position: main
+    function: 큐레이션 리스트 (가로 스크롤 카드)
+    data_source:
+      resource: curations
+    events:
+      - on: click:site_card
+        do: /sites/:id로 이동
+
+  - id: nearby_site_list
+    type: list
+    position: main
+    function: GPS 기반 내 근처 기도터 목록
+    data_source:
+      resource: prayer_sites
+    events:
+      - on: click:site_card
+        do: /sites/:id로 이동
+
+  - id: bottom_tab_bar
+    type: navigation
+    position: footer
+    function: 하단 탭 네비게이션 (홈/지도/마이)
+    events:
+      - on: click:tab
+        do: 선택한 탭 페이지로 이동
+
+connections:
+  navigations:
+    - from: search_bar
+      to: /search
+    - from: map_preview
+      to: /map
+    - from: curation_section
+      to: /sites/:id
+    - from: nearby_site_list
+      to: /sites/:id
+    - from: bottom_tab_bar
+      to: /map
+
+  shared_components:
+    - bottom_tab_bar
+
+tests:
+  - name: 초기 로드
+    when: 페이지 접속
+    then:
+      - 배너 캐러셀 표시
+      - 검색바 표시
+      - 큐레이션 섹션 표시
+
+  - name: 내 근처 기도터 (GPS 허용)
+    when: GPS 권한 허용 상태에서 접속
+    then:
+      - 현재 위치 기준 가까운 기도터 목록 표시
+      - 거리순 정렬
+
+  - name: 내 근처 기도터 (GPS 거부)
+    when: GPS 권한 거부 상태에서 접속
+    then:
+      - 내 근처 섹션에 GPS 권한 안내 메시지 표시
+
+  - name: 검색 실행
+    when: 검색바에 "인왕산" 입력 후 제출
+    then:
+      - /search?q=인왕산으로 이동
